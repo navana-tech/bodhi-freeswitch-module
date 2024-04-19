@@ -50,20 +50,20 @@ Stop transcription on the channel.
 
 - Copy build file from [/poc](/poc) folder to ~/freeswitch/mod/ directory.
 - Copy all files from [/poc/scripts](/poc/scripts) to ~/freeswitch/scripts directory.
-- Add Auth variables in `vars.xml` file
-- Add bodhi module to modules configuration `modules.conf.xml`
+- Add Auth variables in `~/freeswitch/conf/vars.xml` file
+- Add bodhi module to modules configuration `~/freeswitch/conf/autoload_configs/modules.conf.xml`
 
 ```bash
 <load module="mod_bodhi_transcribe"/>
 ```
 
-- Add Dialplan to run lua file `/dialplan/default.xml`
+- Add Dialplan to run lua file `~/freeswitch/dialplan/default.xml`
 
 ```xml
 <condition field="destination_number" expression="^8000$">
     <action application="answer"/>
     <action application="log" data="Call connected successfully!" event="info"/>
-    <action application="lua" data="/usr/local/freeswitch/scripts/bodhi_transcribe.lua"/>
+    <action application="lua" data="~/freeswitch/scripts/bodhi_transcribe.lua"/>
 </condition>
 ```
 
@@ -83,3 +83,5 @@ originate {origination_caller_id_number=9090909090}loopback/8000/default &echo()
 - **Marathi:** `mr-general-jan24-v1-8khz`
 - **Tamil:** `ta-general-jan24-v1-8khz`
 - **Telugu:** `te-general-jan24-v1-8khz`
+
+Change ~/freeswitch with actual path of freeswitch folder
