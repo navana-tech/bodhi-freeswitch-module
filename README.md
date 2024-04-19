@@ -51,13 +51,13 @@ Stop transcription on the channel.
 - Copy build file from [/poc](/poc) folder to ~/freeswitch/mod/ directory.
 - Copy all files from [/poc/scripts](/poc/scripts) to ~/freeswitch/scripts directory.
 - Add Auth variables in `vars.xml` file
-- Add bodhi module to modules configuration
+- Add bodhi module to modules configuration `modules.conf.xml`
 
 ```bash
 <load module="mod_bodhi_transcribe"/>
 ```
 
-- Add Dialplan to run lua file
+- Add Dialplan to run lua file `/dialplan/default.xml`
 
 ```xml
 <condition field="destination_number" expression="^8000$">
