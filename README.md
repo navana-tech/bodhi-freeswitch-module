@@ -75,7 +75,7 @@ reloadxml
 originate {origination_caller_id_number=9090909090}loopback/8000/default &echo()
 ```
 
-> **Note:** Change ~/freeswitch with actual path of freeswitch folder
+> **Note:** Change ~/freeswitch with actual path of freeswitch directory
 
 ### Available ASR Models for Testing
 
