@@ -75,6 +75,8 @@ reloadxml
 originate {origination_caller_id_number=9090909090}loopback/8000/default &echo()
 ```
 
+> **Note:** Change ~/freeswitch with actual path of freeswitch folder
+
 ### Available ASR Models for Testing
 
 - **Bengali:** `bn-general-jan24-v1-8khz`
@@ -83,5 +85,3 @@ originate {origination_caller_id_number=9090909090}loopback/8000/default &echo()
 - **Marathi:** `mr-general-jan24-v1-8khz`
 - **Tamil:** `ta-general-jan24-v1-8khz`
 - **Telugu:** `te-general-jan24-v1-8khz`
-
-Change ~/freeswitch with actual path of freeswitch folder
