@@ -198,19 +198,21 @@ namespace
       switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "no BODHI_API_KEY provided\n");
       return SWITCH_STATUS_FALSE;
     }
-    
+
     // If no customer ID is provided, log a warning
-    if (!customerId && defaultCustomerId){
+    if (!customerId && defaultCustomerId)
+    {
       customerId = defaultCustomerId;
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Default Customer id(%s)\n", defaultCustomerId);
+      switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Default Customer id(%s)\n", defaultCustomerId);
     }
-    else if (!customerId){
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "no BODHI_CUSTOMER_ID provided\n");
+    else if (!customerId)
+    {
+      switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "no BODHI_CUSTOMER_ID provided\n");
     }
 
     bodhi::AudioPipe *ap = new bodhi::AudioPipe(tech_pvt->sessionId, tech_pvt->host, tech_pvt->port, tech_pvt->path,
-                                                      buflen, read_impl.decoded_bytes_per_packet, apiKey, customerId, 
-                                                      desiredSampling, modelName, eventCallback);
+                                                buflen, read_impl.decoded_bytes_per_packet, apiKey, customerId,
+                                                desiredSampling, modelName, eventCallback);
     if (!ap)
     {
       switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Error allocating AudioPipe\n");
@@ -292,9 +294,11 @@ extern "C"
     const char *customerId = std::getenv("BODHI_CUSTOMER_ID");
     if (NULL == customerId)
     {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE,
-                          "\"BODHI_CUSTOMER_ID\" env var not set; channel variable BODHI_CUSTOMER_ID should be set for proper operation\n");
-    }else{
+      switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE,
+                        "\"BODHI_CUSTOMER_ID\" env var not set; channel variable BODHI_CUSTOMER_ID should be set for proper operation\n");
+    }
+    else
+    {
       defaultCustomerId = customerId;
     }
 
@@ -367,12 +371,6 @@ extern "C"
 
     bodhi::AudioPipe *pAudioPipe = static_cast<bodhi::AudioPipe *>(tech_pvt->pAudioPipe);
 
-    if (pAudioPipe) {
-        pAudioPipe->sendEOS();
-    }else{
-      switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "can't send EOS message\n");
-    }
-
     if (pAudioPipe)
       reaper(tech_pvt);
     destroy_tech_pvt(tech_pvt);
@@ -380,7 +378,6 @@ extern "C"
     switch_mutex_destroy(tech_pvt->mutex);
     tech_pvt->mutex = nullptr;
     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_NOTICE, "(%u) dg_transcribe_session_stop\n", id);
-    
 
     return SWITCH_STATUS_SUCCESS;
   }
