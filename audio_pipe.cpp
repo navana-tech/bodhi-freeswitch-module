@@ -3,6 +3,9 @@
 
 #include <cassert>
 #include <iostream>
+#include <ctime>
+#include <sstream>
+
 
 /* discard incoming text messages over the socket that are longer than this */
 #define MAX_RECV_BUF_SIZE (65 * 1024 * 10)
@@ -26,6 +29,24 @@ namespace
 //   strcpy(buf + 6, apiKey);
 // 	return 0;
 // }
+
+const char* http_status_text(int code) {
+  switch (code) {
+    case 400: return "Bad Request";
+    case 401: return "Authentication Failed";
+    case 402: return "Insufficient Credits";
+    case 403: return "Inactive Customer";
+    case 500: return "Internal Server Error";
+    default:  return "Something went wrong - Unexpected response from the server.";
+  }
+}
+
+std::string getCurrentTimestamp() {
+  std::time_t t = std::time(nullptr);
+  char buf[64];
+  std::strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%SZ", std::gmtime(&t)); // RFC3339 / ISO8601
+  return std::string(buf);
+}
 
 int AudioPipe::lws_callback(struct lws *wsi,
                             enum lws_callback_reasons reason,
@@ -78,11 +99,19 @@ int AudioPipe::lws_callback(struct lws *wsi,
   {
     AudioPipe *ap = findAndRemovePendingConnect(wsi);
     int rc = lws_http_client_http_response(wsi);
+    const char *msg = http_status_text(rc);
+
     lwsl_err("AudioPipe::lws_service_thread LWS_CALLBACK_CLIENT_CONNECTION_ERROR: %s, response status %d\n", in ? (char *)in : "(null)", rc);
     if (ap)
     {
-      ap->m_state = LWS_CLIENT_FAILED;
-      ap->m_callback(ap->m_uuid.c_str(), AudioPipe::CONNECT_FAIL, (char *)in, ap->isFinished());
+        ap->m_state = LWS_CLIENT_FAILED;
+        std::stringstream json;
+        json << "{"
+             << "\"message\":\"" << msg << "\","
+             << "\"code\":" << rc << ","
+             << "\"timestamp\":\"" << getCurrentTimestamp() << "\""
+             << "}";
+        ap->m_callback(ap->m_uuid.c_str(), AudioPipe::CONNECT_FAIL, json.str().c_str(), ap->isFinished());
     }
     else
     {

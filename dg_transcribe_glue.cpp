@@ -68,13 +68,6 @@ namespace
         speex_resampler_destroy(tech_pvt->resampler);
         tech_pvt->resampler = NULL;
       }
-
-      /*
-      if (tech_pvt->vad) {
-        switch_vad_destroy(&tech_pvt->vad);
-        tech_pvt->vad = nullptr;
-      }
-      */
     }
   }
 
@@ -120,9 +113,8 @@ namespace
           {
             // first thing: we can no longer access the AudioPipe
             std::stringstream json;
-            json << "{\"reason\":\"" << message << "\"}";
             tech_pvt->pAudioPipe = nullptr;
-            tech_pvt->responseHandler(session, TRANSCRIBE_EVENT_CONNECT_FAIL, (char *)json.str().c_str(), tech_pvt->bugname, finished);
+            tech_pvt->responseHandler(session, TRANSCRIBE_EVENT_CONNECT_FAIL, message, tech_pvt->bugname, finished);
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "connection failed: %s\n", message);
           }
           break;
@@ -138,14 +130,14 @@ namespace
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "connection closed gracefully\n");
             break;
           case bodhi::AudioPipe::MESSAGE:
-            if (strstr(message, emptyTranscript))
-            {
-              switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "discarding empty bodhi transcript\n");
-            }
-            else
-            {
-              tech_pvt->responseHandler(session, TRANSCRIBE_EVENT_RESULTS, message, tech_pvt->bugname, finished);
-              switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "bodhi message: %s\n", message);
+            if (strstr(message, emptyTranscript)) {
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "discarding empty bodhi transcript\n");
+            } else if (strstr(message, "\"error\"")) {
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "bodhi error received: %s\n", message);
+                tech_pvt->responseHandler(session, TRANSCRIBE_EVENT_CONNECT_FAIL, message, tech_pvt->bugname, finished);
+            } else {
+                tech_pvt->responseHandler(session, TRANSCRIBE_EVENT_RESULTS, message, tech_pvt->bugname, finished);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "bodhi message: %s\n", message);
             }
             break;
 
