@@ -20,6 +20,7 @@
 #include "simple_buffer.h"
 #include "parser.hpp"
 #include "audio_pipe.hpp"
+#include "utils.hpp"
 
 #define RTP_PACKETIZATION_PERIOD 20
 #define FRAME_SIZE_8000 320 /*which means each 20ms frame as 320 bytes at 8 khz (1 channel only)*/
@@ -128,7 +129,7 @@ namespace
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "connection closed gracefully\n");
             break;
           case bodhi::AudioPipe::MESSAGE:
-           if (strstr(message, "\"error\"")) {
+           if (utils::hasJsonKey(message, "error")) {
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "bodhi error received: %s\n", message);
                 tech_pvt->responseHandler(session, TRANSCRIBE_EVENT_CONNECT_FAIL, message, tech_pvt->bugname, finished);
             } else {
