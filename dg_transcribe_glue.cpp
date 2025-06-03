@@ -36,8 +36,6 @@ namespace
   static unsigned int idxCallCount = 0;
   static uint32_t playCount = 0;
 
-  static const char *emptyTranscript = "{\"call_id\": \"\", \"segment_id\": \"\", \"eos\": false, \"type\": \"\", \"text\": \"\"}";
-
   static void reaper(private_t *tech_pvt)
   {
     std::shared_ptr<bodhi::AudioPipe> pAp;
@@ -130,9 +128,7 @@ namespace
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "connection closed gracefully\n");
             break;
           case bodhi::AudioPipe::MESSAGE:
-            if (strstr(message, emptyTranscript)) {
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "discarding empty bodhi transcript\n");
-            } else if (strstr(message, "\"error\"")) {
+           if (strstr(message, "\"error\"")) {
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "bodhi error received: %s\n", message);
                 tech_pvt->responseHandler(session, TRANSCRIBE_EVENT_CONNECT_FAIL, message, tech_pvt->bugname, finished);
             } else {
