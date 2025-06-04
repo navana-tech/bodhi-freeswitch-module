@@ -1,10 +1,10 @@
 /*
  *
- * mod_bodhi_transcribe.c -- Freeswitch module for using dg streaming transcribe api
+ * mod_bodhi_transcribe.c -- Freeswitch module for using bodhi streaming transcribe api
  *
  */
 #include "mod_bodhi_transcribe.h"
-#include "dg_transcribe_glue.h"
+#include "bodhi_transcribe_glue.h"
 
 /* Prototypes */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_bodhi_transcribe_shutdown);
@@ -50,14 +50,14 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 		private_t *tech_pvt = (private_t *)switch_core_media_bug_get_user_data(bug);
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "Got SWITCH_ABC_TYPE_CLOSE.\n");
 
-		dg_transcribe_session_stop(session, 1, tech_pvt->bugname);
+		bodhi_transcribe_session_stop(session, 1, tech_pvt->bugname);
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
 	}
 	break;
 
 	case SWITCH_ABC_TYPE_READ:
 
-		return dg_transcribe_frame(session, bug);
+		return bodhi_transcribe_frame(session, bug);
 		break;
 
 	case SWITCH_ABC_TYPE_WRITE:
@@ -93,17 +93,17 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 
 	samples_per_second = !strcasecmp(read_impl.iananame, "g722") ? read_impl.actual_samples_per_second : read_impl.samples_per_second;
 
-	if (SWITCH_STATUS_FALSE == dg_transcribe_session_init(session, responseHandler, samples_per_second, flags & SMBF_STEREO ? 2 : 1, modelName, interim, bugname, &pUserData))
+	if (SWITCH_STATUS_FALSE == bodhi_transcribe_session_init(session, responseHandler, samples_per_second, flags & SMBF_STEREO ? 2 : 1, modelName, interim, bugname, &pUserData))
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error initializing dg speech session.\n");
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error initializing bodhi speech session.\n");
 		return SWITCH_STATUS_FALSE;
 	}
-	if ((status = switch_core_media_bug_add(session, "dg_transcribe", NULL, capture_callback, pUserData, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
+	if ((status = switch_core_media_bug_add(session, "bodhi_transcribe", NULL, capture_callback, pUserData, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
 	{
 		return status;
 	}
 	switch_channel_set_private(channel, MY_BUG_NAME, bug);
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "added media bug for dg transcribe\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "added media bug for bodhi transcribe\n");
 
 	return SWITCH_STATUS_SUCCESS;
 }
@@ -118,7 +118,7 @@ static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 	if (bug)
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "Received user command command to stop transcribe.\n");
-		status = dg_transcribe_session_stop(session, 0, bugname);
+		status = bodhi_transcribe_session_stop(session, 0, bugname);
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "stopped transcribe.\n");
 	}
 
@@ -126,7 +126,7 @@ static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 }
 
 #define TRANSCRIBE_API_SYNTAX "<uuid> [start|stop] modelName [interim] [stereo|mono]"
-SWITCH_STANDARD_API(dg_transcribe_function)
+SWITCH_STANDARD_API(bodhi_transcribe_function)
 {
 	char *mycmd = NULL, *argv[6] = {0};
 	int argc = 0;
@@ -207,14 +207,14 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_bodhi_transcribe_load)
 
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Bodhi Speech Transcription API loading..\n");
 
-	if (SWITCH_STATUS_FALSE == dg_transcribe_init())
+	if (SWITCH_STATUS_FALSE == bodhi_transcribe_init())
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_CRIT, "Failed initializing dg speech interface\n");
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_CRIT, "Failed initializing bodhi speech interface\n");
 	}
 
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Bodhi Speech Transcription API successfully loaded\n");
 
-	SWITCH_ADD_API(api_interface, "uuid_bodhi_transcribe", "Bodhi Speech Transcription API", dg_transcribe_function, TRANSCRIBE_API_SYNTAX);
+	SWITCH_ADD_API(api_interface, "uuid_bodhi_transcribe", "Bodhi Speech Transcription API", bodhi_transcribe_function, TRANSCRIBE_API_SYNTAX);
 	switch_console_set_complete("add uuid_bodhi_transcribe start modelName");
 	switch_console_set_complete("add uuid_bodhi_transcribe stop ");
 
@@ -227,7 +227,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_bodhi_transcribe_load)
   Macro expands to: switch_status_t mod_bodhi_transcribe_shutdown() */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_bodhi_transcribe_shutdown)
 {
-	dg_transcribe_cleanup();
+	bodhi_transcribe_cleanup();
 	switch_event_free_subclass(TRANSCRIBE_EVENT_RESULTS);
 	return SWITCH_STATUS_SUCCESS;
 }

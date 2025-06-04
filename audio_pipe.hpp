@@ -1,5 +1,5 @@
-#ifndef __DG_AUDIO_PIPE_HPP__
-#define __DG_AUDIO_PIPE_HPP__
+#ifndef __BODHI_AUDIO_PIPE_HPP__
+#define __BODHI_AUDIO_PIPE_HPP__
 
 #include <string>
 #include <list>
