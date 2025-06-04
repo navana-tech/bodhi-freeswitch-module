@@ -1,4 +1,4 @@
-// dg_trsanscribe_glue.cpp
+// bodhi_transcribe_glue.cpp
 #include <switch.h>
 #include <switch_json.h>
 #include <string.h>
@@ -258,7 +258,7 @@ namespace
 
 extern "C"
 {
-  switch_status_t dg_transcribe_init()
+  switch_status_t bodhi_transcribe_init()
   {
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_bodhi_transcribe: audio buffer (in secs):    %d secs\n", nAudioBufferSecs);
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_transcribe: lws service threads:       %d\n", nServiceThreads);
@@ -294,7 +294,7 @@ extern "C"
     return SWITCH_STATUS_SUCCESS;
   }
 
-  switch_status_t dg_transcribe_cleanup()
+  switch_status_t bodhi_transcribe_cleanup()
   {
     bool cleanup = false;
     cleanup = bodhi::AudioPipe::deinitialize();
@@ -305,7 +305,7 @@ extern "C"
     return SWITCH_STATUS_FALSE;
   }
 
-  switch_status_t dg_transcribe_session_init(switch_core_session_t *session,
+  switch_status_t bodhi_transcribe_session_init(switch_core_session_t *session,
                                              responseHandler_t responseHandler, uint32_t samples_per_second, uint32_t channels,
                                              char *modelName, int interim, char *bugname, void **ppUserData)
   {
@@ -334,20 +334,20 @@ extern "C"
     return SWITCH_STATUS_SUCCESS;
   }
 
-  switch_status_t dg_transcribe_session_stop(switch_core_session_t *session, int channelIsClosing, char *bugname)
+  switch_status_t bodhi_transcribe_session_stop(switch_core_session_t *session, int channelIsClosing, char *bugname)
   {
 
     switch_channel_t *channel = switch_core_session_get_channel(session);
     switch_media_bug_t *bug = (switch_media_bug_t *)switch_channel_get_private(channel, MY_BUG_NAME);
     if (!bug)
     {
-      switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "dg_transcribe_session_stop: no bug - websocket conection already closed\n");
+      switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "bodhi_transcribe_session_stop: no bug - websocket conection already closed\n");
       return SWITCH_STATUS_FALSE;
     }
     private_t *tech_pvt = (private_t *)switch_core_media_bug_get_user_data(bug);
     uint32_t id = tech_pvt->id;
 
-    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "(%u) dg_transcribe_session_stop\n", id);
+    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "(%u) bodhi_transcribe_session_stop\n", id);
 
     if (!tech_pvt)
       return SWITCH_STATUS_FALSE;
@@ -366,12 +366,12 @@ extern "C"
     switch_mutex_unlock(tech_pvt->mutex);
     switch_mutex_destroy(tech_pvt->mutex);
     tech_pvt->mutex = nullptr;
-    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_NOTICE, "(%u) dg_transcribe_session_stop\n", id);
+    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_NOTICE, "(%u) bodhi_transcribe_session_stop\n", id);
 
     return SWITCH_STATUS_SUCCESS;
   }
 
-  switch_bool_t dg_transcribe_frame(switch_core_session_t *session, switch_media_bug_t *bug)
+  switch_bool_t bodhi_transcribe_frame(switch_core_session_t *session, switch_media_bug_t *bug)
   {
     private_t *tech_pvt = (private_t *)switch_core_media_bug_get_user_data(bug);
     size_t inuse = 0;
