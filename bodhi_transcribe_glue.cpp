@@ -1,4 +1,4 @@
-// bodhi_trsanscribe_glue.cpp
+// bodhi_transcribe_glue.cpp
 #include <switch.h>
 #include <switch_json.h>
 #include <string.h>
