@@ -3,6 +3,10 @@
 
 #include <cassert>
 #include <iostream>
+#include <ctime>
+#include <sstream>
+#include "utils.hpp"
+
 
 /* discard incoming text messages over the socket that are longer than this */
 #define MAX_RECV_BUF_SIZE (65 * 1024 * 10)
@@ -78,11 +82,19 @@ int AudioPipe::lws_callback(struct lws *wsi,
   {
     AudioPipe *ap = findAndRemovePendingConnect(wsi);
     int rc = lws_http_client_http_response(wsi);
+    const char *msg = utils::http_status_text(rc);
+
     lwsl_err("AudioPipe::lws_service_thread LWS_CALLBACK_CLIENT_CONNECTION_ERROR: %s, response status %d\n", in ? (char *)in : "(null)", rc);
     if (ap)
     {
-      ap->m_state = LWS_CLIENT_FAILED;
-      ap->m_callback(ap->m_uuid.c_str(), AudioPipe::CONNECT_FAIL, (char *)in, ap->isFinished());
+        ap->m_state = LWS_CLIENT_FAILED;
+        std::stringstream json;
+        json << "{"
+             << "\"message\":\"" << msg << "\","
+             << "\"code\":" << rc << ","
+             << "\"timestamp\":\"" << utils::getCurrentTimestamp() << "\""
+             << "}";
+        ap->m_callback(ap->m_uuid.c_str(), AudioPipe::CONNECT_FAIL, json.str().c_str(), ap->isFinished());
     }
     else
     {

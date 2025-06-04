@@ -19,13 +19,8 @@ end
 if session:ready() then
 
     -- Set the model to the desired language model
-    model = "hi-awaazde-nov21-v1-8khz" -- Hindi Awaaz.De
-    -- model = "hi-general-feb24-v1-8khz" -- Hindi
-    -- model = "bn-general-jan24-v1-8khz" -- Bengali
-    -- model = "ta-general-jan24-v1-8khz" -- Tamil
-    -- model = "te-general-jan24-v1-8khz" -- Telugu
-    -- model = "mr-general-jan24-v1-8khz" -- Marathi
-    -- model = "kn-general-jan24-v1-8khz" -- Kannada
+    model = "hi-general-v2-8khz"
+    -- check list of available @ https://navana.gitbook.io/bodhi#available-languages-and-asr-models 
 
     api = freeswitch.API()
     session:sleep(500)
@@ -46,8 +41,11 @@ if session:ready() then
     local action = "start"
     api:execute("uuid_bodhi_transcribe", uuid .. " " .. action .. " " .. model)
 
-    -- Wait for custom event to get the transcription
-    con = freeswitch.EventConsumer("CUSTOM","bodhi_transcribe::transcription")
+    -- Listen for Bodhi transcription events
+    con = freeswitch.EventConsumer()
+    con:bind("CUSTOM", "bodhi_transcribe::transcription");
+    con:bind("CUSTOM", "bodhi_transcribe::connect_failed");
+
     local sent_file = false
 
     -- Send the file
@@ -56,19 +54,28 @@ if session:ready() then
     while session:ready() do
         session:execute("sleep", "1000")
         for e in (function() return con:pop(1,10) end) do
-            -- freeswitch.consoleLog("ERR","event\n" .. e:serialize("xml"))
-            body_text = e:getBody()
+            local subclass = e:getHeader("Event-Subclass")
+            local body_text = e:getBody()
             logme(body_text)
-            body_json, decode_error = json.decode(body_text)
-            if not body_json then
-                freeswitch.consoleLog("ERR", "Error decoding JSON: " .. tostring(decode_error))
-                break
-            end
-            table.insert(responses, body_json) -- Push response into the array
-            if body_json["type"] == "complete" then
-                speech_text = body_json["text"]
-                if speech_text ~= nil and not sent_file then
-                    sent_file = true
+            
+            if subclass == "bodhi_transcribe::connect_failed" then
+                freeswitch.consoleLog("ERR", "Connection to transcription service failed.")
+                freeswitch.consoleLog("ERR", body_text)
+                terminateConnection(uuid)
+                session:hangup()
+                return
+            elseif subclass == "bodhi_transcribe::transcription" then
+                local body_json, decode_error = json.decode(body_text)
+                if not body_json then
+                    freeswitch.consoleLog("ERR", "Error decoding JSON: " .. tostring(decode_error))
+                    break
+                end
+                table.insert(responses, body_json)
+                if body_json["type"] == "complete" then
+                    local speech_text = body_json["text"]
+                    if speech_text ~= nil and not sent_file then
+                        sent_file = true
+                    end
                 end
             end
         end

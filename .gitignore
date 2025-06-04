@@ -5,3 +5,13 @@
 # Makefiles
 Makefile
 Makefile.in
+
+# Autotools/libtool
+.libs/
+.deps/
+
+# Object and binary files
+*.lo
+*.la
+*.a
+*.o
