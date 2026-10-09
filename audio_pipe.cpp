@@ -64,7 +64,8 @@ int AudioPipe::lws_callback(struct lws *wsi,
       std::string apiKey = ap->getApiKey();
       std::string customerId = ap->getCustomerId();
 
-      if (lws_add_http_header_by_name(wsi, (unsigned char *)"x-customer-id:", (unsigned char *)customerId.c_str(), customerId.length(), p, end))
+      if (!customerId.empty() &&
+          lws_add_http_header_by_name(wsi, (unsigned char *)"x-customer-id:", (unsigned char *)customerId.c_str(), customerId.length(), p, end))
         return -1;
 
       if (lws_add_http_header_by_name(wsi, (unsigned char *)"x-api-key:", (unsigned char *)apiKey.c_str(), apiKey.length(), p, end))
@@ -557,7 +558,7 @@ AudioPipe::AudioPipe(const char *uuid, const char *host, unsigned int port, cons
                                                                         m_audio_buffer_min_freespace(minFreespace), m_audio_buffer_max_len(bufLen), m_gracefulShutdown(false),
                                                                         m_audio_buffer_write_offset(LWS_PRE), m_recv_buf(nullptr), m_recv_buf_ptr(nullptr),
                                                                         m_state(LWS_CLIENT_IDLE), m_wsi(nullptr), m_vhd(nullptr), m_apiKey(apiKey),
-                                                                        m_customerId(customerId), m_sampleRate(sampleRate), m_modelName(modelName), m_callback(callback)
+                                                                        m_customerId(customerId ? customerId : ""), m_sampleRate(sampleRate), m_modelName(modelName), m_callback(callback)
 {
 
   m_audio_buffer = new uint8_t[m_audio_buffer_max_len];
