@@ -160,11 +160,11 @@ namespace
 
     memset(tech_pvt, 0, sizeof(private_t));
 
-    std::string path;
+    std::string path = "/";
     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "path: %s\n", path.c_str());
 
     strncpy(tech_pvt->sessionId, switch_core_session_get_uuid(session), MAX_SESSION_ID);
-    strncpy(tech_pvt->host, "bodhi.navana.ai", MAX_WS_URL_LEN);
+    strncpy(tech_pvt->host, "stt.navana.ai", MAX_WS_URL_LEN);
     tech_pvt->port = 443;
     strncpy(tech_pvt->path, path.c_str(), MAX_PATH_LEN);
     tech_pvt->sampling = desiredSampling;
@@ -188,15 +188,10 @@ namespace
       return SWITCH_STATUS_FALSE;
     }
 
-    // If no customer ID is provided, log a warning
+    // Customer ID is optional: platform API keys authenticate on their own
     if (!customerId && defaultCustomerId)
     {
       customerId = defaultCustomerId;
-      switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Default Customer id(%s)\n", defaultCustomerId);
-    }
-    else if (!customerId)
-    {
-      switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "no BODHI_CUSTOMER_ID provided\n");
     }
 
     bodhi::AudioPipe *ap = new bodhi::AudioPipe(tech_pvt->sessionId, tech_pvt->host, tech_pvt->port, tech_pvt->path,
@@ -280,16 +275,7 @@ extern "C"
       defaultApiKey = apiKey;
     }
 
-    const char *customerId = std::getenv("BODHI_CUSTOMER_ID");
-    if (NULL == customerId)
-    {
-      switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE,
-                        "\"BODHI_CUSTOMER_ID\" env var not set; channel variable BODHI_CUSTOMER_ID should be set for proper operation\n");
-    }
-    else
-    {
-      defaultCustomerId = customerId;
-    }
+    defaultCustomerId = std::getenv("BODHI_CUSTOMER_ID");
 
     return SWITCH_STATUS_SUCCESS;
   }

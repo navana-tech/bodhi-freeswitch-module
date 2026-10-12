@@ -30,7 +30,7 @@ Stop transcription on the channel.
 | variable          | Description                            |
 | ----------------- | -------------------------------------- |
 | BODHI_API_KEY     | Bodhi API key used to authenticate     |
-| BODHI_CUSTOMER_ID | Bodhi Customer Id used to authenticate |
+| BODHI_CUSTOMER_ID | Optional. Legacy Bodhi Customer Id; not needed with a platform API key |
 
 ### Events
 
@@ -48,9 +48,10 @@ Stop transcription on the channel.
 
 ### How to use POC
 
-- Copy build file from [/poc](/poc) folder to ~/freeswitch/mod/ directory.
+- Build `mod_bodhi_transcribe` from source against your FreeSWITCH install and copy the resulting `mod_bodhi_transcribe.so` to ~/freeswitch/mod/ directory.
+  The prebuilt binary in [/poc](/poc) predates the move to the new platform (old host, no API-key-only auth) and should not be used.
 - Copy all files from [/poc/scripts](/poc/scripts) to ~/freeswitch/scripts directory.
-- Add Auth variables in `~/freeswitch/conf/vars.xml` file
+- Set `BODHI_API_KEY` in `~/freeswitch/conf/vars.xml` file. `BODHI_CUSTOMER_ID` is only needed for legacy keys.
 - Add bodhi module to modules configuration `~/freeswitch/conf/autoload_configs/modules.conf.xml`
 
 ```bash
